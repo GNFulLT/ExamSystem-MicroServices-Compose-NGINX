@@ -1,0 +1,48 @@
+version: '3.6'
+
+services:
+  # Proxies request to internal services
+  nginx:
+    container_name: exam-system-nginx
+    build:
+      dockerfile: Dockerfile
+      context: ./nginx
+    ports:
+      - '80:80'
+      - "443:443"
+    volumes:
+      - "./nginx/:/etc/nginx/templates/"
+    depends_on:
+      - auth-service
+
+  auth-service-db:
+    container_name: exam-system-auth-service-db
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=authdb
+      - POSTGRES_USER=authservice
+      - POSTGRES_PASSWORD=authservice
+
+      
+
+  auth-service:
+    container_name: exam-system-auth-service
+    build:
+      dockerfile: ./auth-service/Dockerfile
+      context: ./auth-service
+    environment:
+      - USER_SERVICE=user-service
+      - DB_HOST=auth-service-db
+      - DB_NAME=authdb
+      - DB_USER=authservice
+      - DB_PASSWORD=authservice
+    depends_on:
+      - auth-service-db
+
+volumes:
+  db-auth:
+
+
+
+
